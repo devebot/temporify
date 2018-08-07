@@ -3,9 +3,46 @@
   "version": "0.0.1",
   "description": "Generate temporary files and directories",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "directories": {
+    "lib": "lib/"
   },
-  "author": "devebot",
-  "license": "MIT"
+  "files": [
+    "bin/",
+    "dist/",
+    "lib/"
+  ],
+  "scripts": {
+    "build": "babel ./src -d ./lib",
+    "clean": "rm -rf ./lib",
+    "prepublish": "npm run clean && NODE_ENV=${BABEL_ENV:-production} npm run build",
+    "pretest": "npm run clean && NODE_ENV=${BABEL_ENV:-test} npm run build",
+    "test": "mocha --recursive test/**/*-test.js",
+    "verify": "npm run prepublish && mocha --recursive test/**/*-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devebot/temporify.git"
+  },
+  "keywords": [
+    "temporary",
+    "testing"
+  ],
+  "author": {
+    "name": "Devebot",
+    "email": "contact@devebot.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devebot/temporify/issues"
+  },
+  "homepage": "https://github.com/devebot/temporify#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-minify-mangle-names": "^0.3.0",
+    "babel-preset-env": "^1.6.1",
+    "mocha": "^4.1.0"
+  },
+  "dependencies": {
+    "ejs": "^2.6.1"
+  }
 }
