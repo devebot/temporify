@@ -54,7 +54,7 @@ function TemporifyBuilder(params = {}) {
     return this;
   }
 
-  this.build = function() {
+  this.generate = function() {
     for(let idx in descriptors) {
       let descriptor = descriptors[idx];
       shell.mkdir('-p', descriptor.dir);
@@ -81,12 +81,12 @@ function TemporifyBuilder(params = {}) {
   }
 }
 
-function isObject(val) {
-  return val && typeof val === 'object';
-}
-
 function isArray(val) {
   return Array.isArray(val);
+}
+
+function isObject(val) {
+  return val && typeof val === 'object' && !isArray(val);
 }
 
 function isString(val) {

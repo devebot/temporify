@@ -28,7 +28,7 @@ describe('Builder', function() {
       `
     });
 
-    builder.add({
+    builder.add([{
       dir: 'lib/',
       filename: 'example.js',
       content: `
@@ -38,9 +38,7 @@ describe('Builder', function() {
         }
         module.exports = Example;
       `
-    });
-
-    builder.add({
+    }, {
       dir: 'config/',
       filename: 'sandbox.js',
       content: `
@@ -50,7 +48,7 @@ describe('Builder', function() {
           }
         };
       `
-    });
+    }]);
 
     builder.add({
       filename: 'README.md',
@@ -59,7 +57,7 @@ describe('Builder', function() {
       `
     });
 
-    builder.build();
+    builder.generate();
 
     var filenames = [];
     shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
