@@ -93,9 +93,11 @@ function Builder(params = {}) {
 
   this.ls = function () {
     var filelist = [];
-    shell.ls('-R', this.homedir).forEach(function(file) {
-      filelist.push(file);
-    });
+    if (shell.test('-d', this.homedir)) {
+      shell.ls('-R', this.homedir).forEach(function(file) {
+        filelist.push(file);
+      });
+    }
     return filelist;
   }
 
@@ -113,6 +115,8 @@ function Builder(params = {}) {
       }
       cleanup();
       getContainer().removeCallback();
+      container = null;
+      descriptors.splice(0);
     }
   }
 }

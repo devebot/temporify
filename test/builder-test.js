@@ -60,21 +60,17 @@ describe('Builder', function() {
 
     builder.generate();
 
-    var filenames = [];
-    shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
-      filenames.push(file);
-    });
+    var filenames = builder.ls();
 
     dbg.enabled && dbg(JSON.stringify(filenames, null, 2));
 
     assert.deepEqual(filenames, [
-      "example-project",
-      "example-project/config",
-      "example-project/config/sandbox.js",
-      "example-project/lib",
-      "example-project/lib/example.js",
-      "example-project/README.md",
-      "example-project/server.js"
+      "config",
+      "config/sandbox.js",
+      "lib",
+      "lib/example.js",
+      "README.md",
+      "server.js"
     ]);
 
     let text = shell.cat(path.join(builder.homedir, 'README.md'));
@@ -190,7 +186,79 @@ describe('Builder', function() {
     let basedir = builder.basedir;
 
     builder.destroy();
+    assert.isFalse(shell.test('-d', basedir));
+  });
 
+  it('cleanup() removes all of files & directories but keep descriptors', function() {
+    var dbg = debug('temporify:create-project');
+    var builder = new Builder({
+      subdir: 'example-project'
+    });
+    let basedir = builder.basedir;
+
+    builder.add([{
+      filename: 'server.js',
+      content: `
+        var devebot = require('devebot');
+        module.exports = devebot.launchApplication({
+          appRootPath: __dirname
+        });
+      `
+    }, {
+      dir: 'lib/',
+      filename: 'example.js',
+      content: `
+        function Example(params = {}) {
+          var L = params.loggingFactory.getLogger();
+          var T = params.loggingFactory.getTracer();
+        }
+        module.exports = Example;
+      `
+    }, {
+      dir: 'config/',
+      filename: 'sandbox.js',
+      content: `
+        module.exports = {
+          application: {
+            host: "0.0.0.0"
+          }
+        };
+      `
+    }, {
+      filename: 'README.md',
+      content: `
+      # example-project
+      `
+    }]);
+
+    builder.generate();
+    assert.deepEqual(builder.ls(), [
+      "config",
+      "config/sandbox.js",
+      "lib",
+      "lib/example.js",
+      "README.md",
+      "server.js"
+    ]);
+
+    builder.cleanup();
+    assert.deepEqual(builder.ls(), []);
+    assert.isTrue(shell.test('-d', basedir));
+    assert.equal(builder.basedir, basedir);
+
+    builder.generate();
+    assert.deepEqual(builder.ls(), [
+      "config",
+      "config/sandbox.js",
+      "lib",
+      "lib/example.js",
+      "README.md",
+      "server.js"
+    ]);
+    assert.isTrue(shell.test('-d', basedir));
+    assert.equal(builder.basedir, basedir);
+
+    builder.destroy();
     assert.isFalse(shell.test('-d', basedir));
   });
 });
