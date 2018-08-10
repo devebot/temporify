@@ -7,11 +7,11 @@ const shell = require('shelljs');
 const tmp = require('tmp');
 const misc = require('./misc');
 
-if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
+if (!misc.isCleanupSkipped()) {
   tmp.setGracefulCleanup();
 }
 
-function TemporifyBuilder(params = {}) {
+function Builder(params = {}) {
 
   let subdir = misc.isString(params.subdir) ? params.subdir : '';
   let container = null;
@@ -27,12 +27,14 @@ function TemporifyBuilder(params = {}) {
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
+        content = misc.removeFirstLineBreak(deindent(content || ''));
         descriptors.push({
           deployed: false,
           dir: fullpath,
           filename: path.join(fullpath, filename),
           mode: mode,
-          content: misc.removeFirstLineBreak(deindent(content || ''))
+          content: content,
+          checksum: misc.generateChecksum(content)
         });
       } else {
         descriptors.push({
@@ -89,13 +91,21 @@ function TemporifyBuilder(params = {}) {
     }
   }
 
+  this.ls = function () {
+    var filelist = [];
+    shell.ls('-R', this.homedir).forEach(function(file) {
+      filelist.push(file);
+    });
+    return filelist;
+  }
+
   this.cleanup = function() {
     cleanup();
     return this;
   }
 
   this.destroy = function() {
-    if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
+    if (!misc.isCleanupSkipped()) {
       if (false) {
         // BE CAREFULLY !!!
         getContainer().removeCallback({ unsafeCleanup: true });
@@ -118,4 +128,4 @@ function isSafeDir(dir) {
   return misc.isString(dir) && dir.match(/^\/tmp\/.*/g);
 }
 
-module.exports = TemporifyBuilder;
+module.exports = Builder;

@@ -134,19 +134,15 @@ describe('Builder', function() {
 
     builder.generate();
 
-    var filenames = [];
-    shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
-      filenames.push(file);
-    });
+    var filenames = builder.ls();
 
     assert.deepEqual(filenames, [
-      "example-project",
-      "example-project/config",
-      "example-project/config/sandbox.js",
-      "example-project/lib",
-      "example-project/lib/example.js",
-      "example-project/README.md",
-      "example-project/server.js"
+      "config",
+      "config/sandbox.js",
+      "lib",
+      "lib/example.js",
+      "README.md",
+      "server.js"
     ]);
 
     // Add more files
@@ -173,23 +169,19 @@ describe('Builder', function() {
 
     builder.generate();
 
-    var filename2 = [];
-    shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
-      filename2.push(file);
-    });
+    var filename2 = builder.ls();
 
     false && console.log(JSON.stringify(filename2, null, 2));
 
     assert.deepEqual(filename2, [
-      "example-project",
-      "example-project/config",
-      "example-project/config/sandbox.js",
-      "example-project/data",
-      "example-project/data/accounts.js",
-      "example-project/lib",
-      "example-project/lib/example.js",
-      "example-project/README.md",
-      "example-project/server.js"
+      "config",
+      "config/sandbox.js",
+      "data",
+      "data/accounts.js",
+      "lib",
+      "lib/example.js",
+      "README.md",
+      "server.js"
     ]);
 
     let text = shell.cat(path.join(builder.homedir, 'README.md'));

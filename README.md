@@ -69,21 +69,14 @@ builder.generate();
 
 // ... do something with the [example-project] ...
 // ... display directory structure, for example ...
-var filenames = [];
-
-var shell = require('shelljs');
-shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
-  filenames.push(file);
-});
-console.log(JSON.stringify(filenames, null, 2));
+console.log(JSON.stringify(builder.ls(), null, 2));
 // [
-//   "example-project",
-//   "example-project/config",
-//   "example-project/config/sandbox.js",
-//   "example-project/lib",
-//   "example-project/lib/example.js",
-//   "example-project/README.md",
-//   "example-project/server.js"
+//   "config",
+//   "config/sandbox.js",
+//   "lib",
+//   "lib/example.js",
+//   "README.md",
+//   "server.js"
 // ]
 
 // clean-up

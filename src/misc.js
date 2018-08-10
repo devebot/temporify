@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 function Misc() {
 
   this.isArray = function (val) {
@@ -19,6 +21,17 @@ function Misc() {
       return str.slice(1);
     }
     return str;
+  }
+
+  this.generateChecksum = function (str) {
+    return crypto
+        .createHash('sha1')
+        .update(str, 'utf8')
+        .digest('hex');
+  }
+
+  this.isCleanupSkipped = function () {
+    return process.env.TEMPORIFY_SKIP_CLEANUP != null;
   }
 }
 
