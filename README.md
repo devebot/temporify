@@ -1,6 +1,6 @@
-# Temporify - generate temporary files and directories
+# Temporify - generate temporary directories & files
 
-`Temporify` is a temporary directories & files generator, which is used to
+`Temporify` is a temporary directories & files generator which is used to
 build a temporary project for automation test.
 
 ## Installing
@@ -8,7 +8,7 @@ build a temporary project for automation test.
 Via npm:
 
 ```shell
-$ npm install --save temporify
+$ npm install --save-dev temporify
 ```
 
 ## Examples
@@ -21,7 +21,9 @@ var builder = new Temporify({
 });
 
 console.log('Root directory: %s', builder.basedir);
+// Root directory: /tmp/tmp-29557R96Xic2Typ4t
 console.log('Home directory: %s', builder.homedir);
+// Root directory: /tmp/tmp-29557R96Xic2Typ4t/example-project
 
 builder.add({
   filename: 'server.js',
@@ -65,9 +67,25 @@ builder.add({
 // generate temporary directory structure
 builder.generate();
 
-// ... do anything with example-project ...
+// ... do something with the [example-project] ...
+// ... display directory structure, for example ...
+var filenames = [];
+
+var shell = require('shelljs');
+shell.ls('-R', path.join(builder.basedir)).forEach(function(file) {
+  filenames.push(file);
+});
+console.log(JSON.stringify(filenames, null, 2));
+// [
+//   "example-project",
+//   "example-project/config",
+//   "example-project/config/sandbox.js",
+//   "example-project/lib",
+//   "example-project/lib/example.js",
+//   "example-project/README.md",
+//   "example-project/server.js"
+// ]
 
 // clean-up
 builder.destroy();
 ```
-
