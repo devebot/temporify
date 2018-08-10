@@ -13,16 +13,21 @@ if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
 function TemporifyBuilder(params = {}) {
 
   let subdir = isString(params.subdir) ? params.subdir : '';
-  let container = tmp.dirSync();
+  let container = null;
   let descriptors = [];
 
+  function getContainer() {
+    return container = container || tmp.dirSync();
+  }
+
   function register(entrypoint) {
-    let {dir, filename, content, mode} = entrypoint;
-    dir = dir || '.';
-    if (isString(dir)) {
-      let fullpath = path.join(container.name, subdir, dir);
+    if (isValid(entrypoint)) {
+      let {dir, filename, content, mode} = entrypoint;
+      dir = dir || '.';
+      let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
         descriptors.push({
+          deployed: false,
           dir: fullpath,
           filename: path.join(fullpath, filename),
           mode: mode,
@@ -30,18 +35,32 @@ function TemporifyBuilder(params = {}) {
         });
       } else {
         descriptors.push({
+          deployed: false,
           dir: fullpath
         });
       }
     }
   }
 
+  function cleanup() {
+    let basedir = getContainer().name;
+    if (isSafeDir(basedir)) {
+      shell.ls(basedir).forEach(function(file) {
+        shell.rm('-rf', path.join(basedir, file));
+      });
+    }
+    for(let idx in descriptors) {
+      let descriptor = descriptors[idx];
+      descriptor.deployed = false;
+    }
+  }
+
   Object.defineProperty(this, 'basedir', {
-    value: container.name
+    value: getContainer().name
   });
 
   Object.defineProperty(this, 'homedir', {
-    value: path.join(container.name, subdir)
+    value: path.join(getContainer().name, subdir)
   });
 
   this.add = function(args = {}) {
@@ -57,28 +76,41 @@ function TemporifyBuilder(params = {}) {
   this.generate = function() {
     for(let idx in descriptors) {
       let descriptor = descriptors[idx];
-      shell.mkdir('-p', descriptor.dir);
-      if (descriptor.filename) {
-        fs.writeFileSync(descriptor.filename, descriptor.content, {
-          mode: descriptor.mode
-        });
+      if (!descriptor.deployed) {
+        shell.mkdir('-p', descriptor.dir);
+        if (descriptor.filename) {
+          fs.writeFileSync(descriptor.filename, descriptor.content, {
+            mode: descriptor.mode
+          });
+        }
+        descriptor.deployed = true;
       }
     }
   }
 
+  this.cleanup = function() {
+    cleanup();
+    return this;
+  }
+
   this.destroy = function() {
     if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
-      // container.removeCallback({ unsafeCleanup: true });
-      // BE CAREFULLY
-      let basedir = container.name;
-      if (isSafeDir(basedir)) {
-        shell.ls(basedir).forEach(function(file) {
-          shell.rm('-rf', path.join(basedir, file));
-        });
+      if (false) {
+        // BE CAREFULLY !!!
+        getContainer().removeCallback({ unsafeCleanup: true });
+        return;
       }
-      container.removeCallback();
+      cleanup();
+      getContainer().removeCallback();
     }
   }
+}
+
+function isValid(entrypoint) {
+  let {dir, filename, content, mode} = entrypoint;
+  if (dir == null && filename == null) return false;
+  if (filename == null && content != null) return false;
+  return true;
 }
 
 function isArray(val) {
