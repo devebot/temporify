@@ -5,6 +5,7 @@ const path = require('path');
 const deindent = require('deindent');
 const shell = require('shelljs');
 const tmp = require('tmp');
+const misc = require('./misc');
 
 if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
   tmp.setGracefulCleanup();
@@ -12,7 +13,7 @@ if (!process.env.TEMPORIFY_SKIP_CLEANUP) {
 
 function TemporifyBuilder(params = {}) {
 
-  let subdir = isString(params.subdir) ? params.subdir : '';
+  let subdir = misc.isString(params.subdir) ? params.subdir : '';
   let container = null;
   let descriptors = [];
 
@@ -31,7 +32,7 @@ function TemporifyBuilder(params = {}) {
           dir: fullpath,
           filename: path.join(fullpath, filename),
           mode: mode,
-          content: denewline(deindent(content || ''))
+          content: misc.removeFirstLineBreak(deindent(content || ''))
         });
       } else {
         descriptors.push({
@@ -64,10 +65,10 @@ function TemporifyBuilder(params = {}) {
   });
 
   this.add = function(args = {}) {
-    if (isObject(args)) {
+    if (misc.isObject(args)) {
       register(args);
     } else
-    if (isArray(args)) {
+    if (misc.isArray(args)) {
       args.forEach(register);
     }
     return this;
@@ -113,27 +114,8 @@ function isValid(entrypoint) {
   return true;
 }
 
-function isArray(val) {
-  return Array.isArray(val);
-}
-
-function isObject(val) {
-  return val && typeof val === 'object' && !isArray(val);
-}
-
-function isString(val) {
-  return typeof val === 'string';
-}
-
 function isSafeDir(dir) {
-  return isString(dir) && dir.match(/^\/tmp\/.*/g);
-}
-
-function denewline(str) {
-  if (isString(str) && str[0] === '\n') {
-    return str.slice(1);
-  }
-  return str;
+  return misc.isString(dir) && dir.match(/^\/tmp\/.*/g);
 }
 
 module.exports = TemporifyBuilder;
