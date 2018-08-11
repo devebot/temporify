@@ -16,7 +16,7 @@ function Builder(params = {}) {
 
   let subdir = misc.isString(params.subdir) ? params.subdir : '';
   let container = null;
-  let descriptors = [];
+  let descriptors = {};
 
   function getContainer() {
     return container = container || tmp.dirSync();
@@ -28,23 +28,24 @@ function Builder(params = {}) {
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
+        let filepath = path.join(fullpath, filename);
         content = misc.removeFirstLineBreak(deindent(content || ''));
         if (misc.isObject(model)) {
           content = ejs.render(content, model, {});
         }
-        descriptors.push({
+        descriptors[filepath] = {
           deployed: false,
           dir: fullpath,
-          filename: path.join(fullpath, filename),
+          filename: filepath,
           mode: mode,
           content: content,
           checksum: misc.generateChecksum(content)
-        });
+        };
       } else {
-        descriptors.push({
+        descriptors[fullpath] = {
           deployed: false,
           dir: fullpath
-        });
+        };
       }
     }
   }
@@ -120,7 +121,9 @@ function Builder(params = {}) {
       cleanup();
       getContainer().removeCallback();
       container = null;
-      descriptors.splice(0);
+      for(let idx in descriptors) {
+        delete descriptors[idx];
+      }
     }
   }
 }
