@@ -26,35 +26,35 @@ function Builder(params = {}) {
 
   function register(entrypoint) {
     if (isValid(entrypoint)) {
-      let {dir, filename, content, model, mode} = entrypoint;
+      let {dir, filename, template, variables, mode} = entrypoint;
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
-        if (misc.isString(content)) {
-          content = misc.removeFirstLineBreak(deindent(content));
+        if (misc.isString(template)) {
+          template = misc.removeFirstLineBreak(deindent(template));
         }
         let filepath = path.join(fullpath, filename);
         if (misc.isObject(descriptors[filepath])) {
           let descriptor = descriptors[filepath];
           let updated = (mode != null && mode != descriptor.mode) ||
-              (content != null && content != descriptor.content) ||
-              (model != null && !lodash.isEqual(model, descriptor.model));
+              (template != null && template != descriptor.template) ||
+              (variables != null && !lodash.isEqual(variables, descriptor.variables));
           if (updated) {
             descriptor.deployed = false;
           }
           descriptor.dir = fullpath;
           descriptor.filename = filepath;
           descriptor.mode = mode || descriptor.mode;
-          descriptor.content = content || descriptor.content || '';
-          descriptor.model = model || descriptor.model;
+          descriptor.template = template || descriptor.template || '';
+          descriptor.variables = variables || descriptor.variables;
         } else {
           descriptors[filepath] = {
             deployed: false,
             dir: fullpath,
             filename: filepath,
             mode: mode,
-            content: content,
-            model: model
+            template: template,
+            variables: variables
           };
         }
       } else {
@@ -87,7 +87,7 @@ function Builder(params = {}) {
     value: path.join(getContainer().name, subdir)
   });
 
-  this.add = function(args = {}) {
+  this.assign = function(args = {}) {
     if (misc.isObject(args)) {
       register(args);
     } else
@@ -103,8 +103,8 @@ function Builder(params = {}) {
       if (!descriptor.deployed) {
         shell.mkdir('-p', descriptor.dir);
         if (descriptor.filename) {
-          let body = descriptor.content;
-          let model = lodash.merge({}, variables, descriptor.model);
+          let body = descriptor.template;
+          let model = lodash.merge({}, variables, descriptor.variables);
           if (!lodash.isEmpty(model)) {
             body = ejs.render(body, model, {});
           }
@@ -151,9 +151,9 @@ function Builder(params = {}) {
 }
 
 function isValid(entrypoint) {
-  let {dir, filename, content, mode} = entrypoint;
+  let {dir, filename, template, mode} = entrypoint;
   if (dir == null && filename == null) return false;
-  if (filename == null && content != null) return false;
+  if (filename == null && template != null) return false;
   return true;
 }
 

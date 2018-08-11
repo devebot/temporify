@@ -25,9 +25,9 @@ console.log('Root directory: %s', builder.basedir);
 console.log('Home directory: %s', builder.homedir);
 // Root directory: /tmp/tmp-29557R96Xic2Typ4t/example-project
 
-builder.add({
+builder.assign({
   filename: 'server.js',
-  content: `
+  template: `
     var devebot = require('devebot');
     module.exports = devebot.launchApplication({
       appRootPath: __dirname
@@ -35,10 +35,10 @@ builder.add({
   `
 });
 
-builder.add([{
+builder.assign([{
   dir: 'lib/',
   filename: 'example.js',
-  content: `
+  template: `
     function Example(params = {}) {
       var L = params.loggingFactory.getLogger();
       var T = params.loggingFactory.getTracer();
@@ -48,7 +48,7 @@ builder.add([{
 }, {
   dir: 'config/',
   filename: 'sandbox.js',
-  content: `
+  template: `
     module.exports = {
       application: {
         host: "0.0.0.0"
@@ -57,9 +57,9 @@ builder.add([{
   `
 }]);
 
-builder.add({
+builder.assign({
   filename: 'README.md',
-  content: `
+  template: `
   # example-project
   `
 });

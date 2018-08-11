@@ -19,9 +19,9 @@ describe('Builder', function() {
     dbg.enabled && dbg('Basedir: %s', builder.basedir);
     dbg.enabled && dbg('Homedir: %s', builder.homedir);
 
-    builder.add({
+    builder.assign({
       filename: 'server.js',
-      content: `
+      template: `
         var devebot = require('devebot');
         module.exports = devebot.launchApplication({
           appRootPath: __dirname
@@ -29,10 +29,10 @@ describe('Builder', function() {
       `
     });
 
-    builder.add([{
+    builder.assign([{
       dir: 'lib/',
       filename: 'example.js',
-      content: `
+      template: `
         function Example(params = {}) {
           var L = params.loggingFactory.getLogger();
           var T = params.loggingFactory.getTracer();
@@ -42,7 +42,7 @@ describe('Builder', function() {
     }, {
       dir: 'config/',
       filename: 'sandbox.js',
-      content: `
+      template: `
         module.exports = {
           application: {
             host: "0.0.0.0"
@@ -51,9 +51,9 @@ describe('Builder', function() {
       `
     }]);
 
-    builder.add({
+    builder.assign({
       filename: 'README.md',
-      content: `
+      template: `
       # example-project
       `
     });
@@ -89,9 +89,9 @@ describe('Builder', function() {
       subdir: 'example-project'
     });
 
-    builder.add({
+    builder.assign({
       filename: 'server.js',
-      content: `
+      template: `
         var devebot = require('devebot');
         module.exports = devebot.launchApplication({
           appRootPath: __dirname
@@ -99,10 +99,10 @@ describe('Builder', function() {
       `
     });
 
-    builder.add([{
+    builder.assign([{
       dir: 'lib/',
       filename: 'example.js',
-      content: `
+      template: `
         function Example(params = {}) {
           var L = params.loggingFactory.getLogger();
           var T = params.loggingFactory.getTracer();
@@ -112,7 +112,7 @@ describe('Builder', function() {
     }, {
       dir: 'config/',
       filename: 'sandbox.js',
-      content: `
+      template: `
         module.exports = {
           application: {
             host: "0.0.0.0"
@@ -121,9 +121,9 @@ describe('Builder', function() {
       `
     }]);
 
-    builder.add({
+    builder.assign({
       filename: 'README.md',
-      content: `
+      template: `
       # example-project
       `
     });
@@ -142,10 +142,10 @@ describe('Builder', function() {
     ]);
 
     // Add more files
-    builder.add({
+    builder.assign({
       dir: 'data/',
       filename: 'accounts.js',
-      content: `
+      template: `
         [
           {
             "username": "user1",
@@ -159,7 +159,7 @@ describe('Builder', function() {
       `
     });
 
-    // change README.md content
+    // change README.md template
     fs.writeFileSync(path.join(builder.homedir, 'README.md'),
         '# example-project\n\nUpdated!!!');
 
@@ -196,9 +196,9 @@ describe('Builder', function() {
     });
     let basedir = builder.basedir;
 
-    builder.add([{
+    builder.assign([{
       filename: 'server.js',
-      content: `
+      template: `
         var devebot = require('devebot');
         module.exports = devebot.launchApplication({
           appRootPath: __dirname
@@ -207,7 +207,7 @@ describe('Builder', function() {
     }, {
       dir: 'lib/',
       filename: 'example.js',
-      content: `
+      template: `
         function Example(params = {}) {
           var L = params.loggingFactory.getLogger();
           var T = params.loggingFactory.getTracer();
@@ -217,7 +217,7 @@ describe('Builder', function() {
     }, {
       dir: 'config/',
       filename: 'sandbox.js',
-      content: `
+      template: `
         module.exports = {
           application: {
             host: "0.0.0.0"
@@ -226,7 +226,7 @@ describe('Builder', function() {
       `
     }, {
       filename: 'README.md',
-      content: `
+      template: `
       # example-project
       `
     }]);
