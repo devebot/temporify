@@ -36,8 +36,8 @@ function Builder(params = {}) {
         let filepath = path.join(fullpath, filename);
         let updated = descriptors[filepath] == undefined || (
           misc.isObject(descriptors[filepath]) && (
-            descriptors[filepath].mode != mode ||
-            descriptors[filepath].checksum != checksum
+            (mode != null && descriptors[filepath].mode != mode) ||
+            (descriptors[filepath].checksum != checksum)
           )
         )
         if (updated) {
@@ -103,6 +103,7 @@ function Builder(params = {}) {
         descriptor.deployed = true;
       }
     }
+    return this;
   }
 
   this.ls = function () {
@@ -122,13 +123,12 @@ function Builder(params = {}) {
 
   this.destroy = function() {
     if (!misc.isCleanupSkipped()) {
-      if (false) {
-        // BE CAREFULLY !!!
+      if (misc.isUnsafeCleanup()) { // BE CAREFULLY !!!
         getContainer().removeCallback({ unsafeCleanup: true });
-        return;
+      } else {
+        cleanup();
+        getContainer().removeCallback();
       }
-      cleanup();
-      getContainer().removeCallback();
       container = null;
       for(let idx in descriptors) {
         delete descriptors[idx];

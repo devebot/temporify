@@ -31,7 +31,11 @@ function Misc() {
   }
 
   this.isCleanupSkipped = function () {
-    return process.env.TEMPORIFY_SKIP_CLEANUP != null;
+    return process.env.TEMPORIFY_CLEANUP_SKIPPED != null;
+  }
+
+  this.isUnsafeCleanup = function () {
+    return process.env.TEMPORIFY_UNSAFE_CLEANUP === "true";
   }
 }
 
