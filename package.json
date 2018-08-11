@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "deindent": "^0.1.0",
+    "ejs": "^2.6.1",
     "shelljs": "^0.8.2",
     "tmp": "0.0.33"
   }

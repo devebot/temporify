@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const deindent = require('deindent');
+const ejs = require('ejs');
 const shell = require('shelljs');
 const tmp = require('tmp');
 const misc = require('./misc');
@@ -23,11 +24,14 @@ function Builder(params = {}) {
 
   function register(entrypoint) {
     if (isValid(entrypoint)) {
-      let {dir, filename, content, mode} = entrypoint;
+      let {dir, filename, content, model, mode} = entrypoint;
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
         content = misc.removeFirstLineBreak(deindent(content || ''));
+        if (misc.isObject(model)) {
+          content = ejs.render(content, model, {});
+        }
         descriptors.push({
           deployed: false,
           dir: fullpath,
