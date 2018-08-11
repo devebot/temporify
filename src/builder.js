@@ -6,6 +6,7 @@ const deindent = require('deindent');
 const ejs = require('ejs');
 const shell = require('shelljs');
 const tmp = require('tmp');
+const lodash = require('lodash');
 const misc = require('./misc');
 
 if (!misc.isCleanupSkipped()) {
@@ -15,6 +16,7 @@ if (!misc.isCleanupSkipped()) {
 function Builder(params = {}) {
 
   let subdir = misc.isString(params.subdir) ? params.subdir : '';
+  let variables = misc.isObject(params.variables) ? lodash.cloneDeep(params.variables) : {};
   let container = null;
   let descriptors = {};
 
@@ -28,26 +30,31 @@ function Builder(params = {}) {
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
-        content = misc.removeFirstLineBreak(deindent(content || ''));
-        if (misc.isObject(model)) {
-          content = ejs.render(content, model, {});
+        if (misc.isString(content)) {
+          content = misc.removeFirstLineBreak(deindent(content));
         }
-        let checksum = misc.generateChecksum(content);
         let filepath = path.join(fullpath, filename);
-        let updated = descriptors[filepath] == undefined || (
-          misc.isObject(descriptors[filepath]) && (
-            (mode != null && descriptors[filepath].mode != mode) ||
-            (descriptors[filepath].checksum != checksum)
-          )
-        )
-        if (updated) {
+        if (misc.isObject(descriptors[filepath])) {
+          let descriptor = descriptors[filepath];
+          let updated = (mode != null && mode != descriptor.mode) ||
+              (content != null && content != descriptor.content) ||
+              (model != null && !lodash.isEqual(model, descriptor.model));
+          if (updated) {
+            descriptor.deployed = false;
+          }
+          descriptor.dir = fullpath;
+          descriptor.filename = filepath;
+          descriptor.mode = mode || descriptor.mode;
+          descriptor.content = content || descriptor.content || '';
+          descriptor.model = model || descriptor.model;
+        } else {
           descriptors[filepath] = {
             deployed: false,
             dir: fullpath,
             filename: filepath,
             mode: mode,
             content: content,
-            checksum: checksum
+            model: model
           };
         }
       } else {
@@ -96,7 +103,13 @@ function Builder(params = {}) {
       if (!descriptor.deployed) {
         shell.mkdir('-p', descriptor.dir);
         if (descriptor.filename) {
-          fs.writeFileSync(descriptor.filename, descriptor.content, {
+          let body = descriptor.content;
+          let model = lodash.merge({}, variables, descriptor.model);
+          if (!lodash.isEmpty(model)) {
+            body = ejs.render(body, model, {});
+          }
+          descriptor.checksum = misc.generateChecksum(body);
+          fs.writeFileSync(descriptor.filename, body, {
             mode: descriptor.mode
           });
         }
