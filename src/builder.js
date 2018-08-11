@@ -28,21 +28,30 @@ function Builder(params = {}) {
       dir = dir || '.';
       let fullpath = path.join(getContainer().name, subdir, dir);
       if (filename) {
-        let filepath = path.join(fullpath, filename);
         content = misc.removeFirstLineBreak(deindent(content || ''));
         if (misc.isObject(model)) {
           content = ejs.render(content, model, {});
         }
-        descriptors[filepath] = {
-          deployed: false,
-          dir: fullpath,
-          filename: filepath,
-          mode: mode,
-          content: content,
-          checksum: misc.generateChecksum(content)
-        };
+        let checksum = misc.generateChecksum(content);
+        let filepath = path.join(fullpath, filename);
+        let updated = descriptors[filepath] == undefined || (
+          misc.isObject(descriptors[filepath]) && (
+            descriptors[filepath].mode != mode ||
+            descriptors[filepath].checksum != checksum
+          )
+        )
+        if (updated) {
+          descriptors[filepath] = {
+            deployed: false,
+            dir: fullpath,
+            filename: filepath,
+            mode: mode,
+            content: content,
+            checksum: checksum
+          };
+        }
       } else {
-        descriptors[fullpath] = {
+        descriptors[fullpath] = descriptors[fullpath] || {
           deployed: false,
           dir: fullpath
         };
