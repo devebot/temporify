@@ -1,7 +1,7 @@
 # Temporify - generate temporary directories & files
 
 `Temporify` is a temporary directories & files generator which is used to
-build a temporary project for automation test.
+build a temporary project in automation test.
 
 ## Installing
 

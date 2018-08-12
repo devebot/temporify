@@ -36,12 +36,13 @@ function Builder(params = {}) {
         let filepath = path.join(fullpath, filename);
         if (misc.isObject(descriptors[filepath])) {
           let descriptor = descriptors[filepath];
-          let updated = (mode != null && mode != descriptor.mode) ||
+          let changed = (mode != null && mode != descriptor.mode) ||
               (template != null && template != descriptor.template) ||
               (variables != null && !lodash.isEqual(variables, descriptor.variables));
-          if (updated) {
+          if (changed) {
             descriptor.deployed = false;
           }
+          descriptor.type = 'file';
           descriptor.dir = fullpath;
           descriptor.filename = filepath;
           descriptor.mode = mode || descriptor.mode;
@@ -50,6 +51,7 @@ function Builder(params = {}) {
         } else {
           descriptors[filepath] = {
             deployed: false,
+            type: 'file',
             dir: fullpath,
             filename: filepath,
             mode: mode,
@@ -60,6 +62,7 @@ function Builder(params = {}) {
       } else {
         descriptors[fullpath] = descriptors[fullpath] || {
           deployed: false,
+          type: 'dir',
           dir: fullpath
         };
       }
@@ -109,6 +112,7 @@ function Builder(params = {}) {
             body = ejs.render(body, model, {});
           }
           descriptor.checksum = misc.generateChecksum(body);
+          descriptor.size = body.length;
           fs.writeFileSync(descriptor.filename, body, {
             mode: descriptor.mode
           });
@@ -119,6 +123,16 @@ function Builder(params = {}) {
     return this;
   }
 
+  this.exec = function (cmd, opts) {
+    opts = lodash.defaults({
+      cwd: this.homedir,
+      silent: true,
+    }, lodash.pick(opts, ['env', 'shell']));
+    let info = shell.exec(cmd, opts);
+    // let {code, stdout, stderr} = info;
+    return info;
+  }
+
   this.ls = function () {
     var filelist = [];
     if (shell.test('-d', this.homedir)) {
@@ -127,6 +141,48 @@ function Builder(params = {}) {
       });
     }
     return filelist;
+  }
+
+  this.stats = function () {
+    // load files from homedir
+    let filemap = {};
+    let homedir = this.homedir;
+    if (shell.test('-d', homedir)) {
+      shell.ls('-lR', homedir).forEach(function(file) {
+        let fullpath = path.join(homedir, file.name);
+        let type = null;
+        if (!type && shell.test('-f', fullpath)) {
+          type = 'file';
+        }
+        if (!type && shell.test('-d', fullpath)) {
+          type = 'dir';
+        }
+        if (!type) {
+          type = 'unknown';
+        }
+        filemap[fullpath] = { scope: 1, realobject: { type: type } };
+        if (type === 'file') {
+          filemap[fullpath].realobject.dir = path.dirname(fullpath);
+          filemap[fullpath].realobject.filename = fullpath;
+          filemap[fullpath].realobject.size = file.size;
+        }
+        if (type === 'dir') {
+          filemap[fullpath].realobject.dir = fullpath;
+        }
+      });
+    }
+    // loop descriptors for comparison
+    lodash.forOwn(descriptors, function(descriptor, fullpath) {
+      if (filemap[fullpath]) { // new files
+        filemap[fullpath].scope = 0;
+      } else {
+        filemap[fullpath] = {};
+        filemap[fullpath].scope = -1;
+      }
+      filemap[fullpath] = filemap[fullpath] || {};
+      filemap[fullpath].descriptor = lodash.omit(descriptor, ['template', 'variables']);
+    });
+    return filemap;
   }
 
   this.cleanup = function() {
@@ -148,6 +204,8 @@ function Builder(params = {}) {
       }
     }
   }
+
+  return this;
 }
 
 function isValid(entrypoint) {
