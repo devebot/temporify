@@ -15,6 +15,9 @@ if (!misc.isCleanupSkipped()) {
 
 function Builder(params = {}) {
 
+  const compareDir = params.compareDir !== false;
+  const throwIfError = params.throwIfError !== false;
+
   let subdir = misc.isString(params.subdir) ? params.subdir : '';
   let variables = misc.isObject(params.variables) ? lodash.cloneDeep(params.variables) : {};
   let container = null;
@@ -25,7 +28,7 @@ function Builder(params = {}) {
   }
 
   function register(entrypoint) {
-    if (isValid(entrypoint)) {
+    if (isValid(entrypoint, throwIfError)) {
       let {dir, filename, template, variables, mode} = entrypoint;
       dir = dir || '.';
       let fullpath = path.join('.', dir, '/');
@@ -65,6 +68,21 @@ function Builder(params = {}) {
           type: 'dir',
           dir: fullpath
         };
+      }
+      if (compareDir) {
+        // extract ancestor directories
+        let dirLevels = fullpath.split(path.sep);
+        let parentDir = '.';
+        for(let idx in dirLevels) {
+          if (dirLevels[idx] !== '.' && dirLevels[idx] !== '') {
+            parentDir = path.join(parentDir, dirLevels[idx], '/');
+            descriptors[parentDir] = descriptors[parentDir] || {
+              deployed: false,
+              type: 'dir',
+              dir: parentDir
+            };
+          }
+        }
       }
     }
   }
@@ -161,33 +179,56 @@ function Builder(params = {}) {
         if (!type) {
           type = 'unknown';
         }
-        filemap[file.name] = { scope: 1, realobject: { type: type } };
+        let filepath = file.name;
+        let fileinfo = { scope: 1, realobject: { type: type } };
         if (type === 'file') {
-          filemap[file.name].realobject.dir = path.join(path.dirname(file.name), '/');
-          filemap[file.name].realobject.filename = file.name;
-          filemap[file.name].realobject.size = file.size;
-          filemap[file.name].realobject.checksum = misc.getChecksumOfFile(fullpath);
+          fileinfo.realobject.dir = path.join(path.dirname(filepath), '/');
+          fileinfo.realobject.filename = filepath;
+          fileinfo.realobject.size = file.size;
+          fileinfo.realobject.checksum = misc.getChecksumOfFile(fullpath);
         }
         if (type === 'dir') {
-          filemap[file.name].realobject.dir = path.join(file.name, '/');
+          filepath = path.join(filepath, '/');
+          fileinfo.realobject.dir = filepath;
         }
+        filemap[filepath] = fileinfo;
       });
     }
     // loop descriptors for comparison
-    lodash.forOwn(descriptors, function(descriptor, fullpath) {
-      if (filemap[fullpath]) { // new files
-        filemap[fullpath].scope = 0;
-      } else {
-        filemap[fullpath] = {};
-        filemap[fullpath].scope = -1;
+    lodash.forOwn(descriptors, function(descriptor, filepath) {
+      if (filemap[filepath]) {
+        filemap[filepath].scope = 0;
+      } else { // new files
+        filemap[filepath] = {};
+        filemap[filepath].scope = -1;
       }
-      filemap[fullpath] = filemap[fullpath] || {};
-      filemap[fullpath].descriptor = lodash.omit(descriptor, [
+      filemap[filepath] = filemap[filepath] || {};
+      filemap[filepath].descriptor = lodash.omit(descriptor, [
         'template',
         'variables'
       ]);
     });
-    return lodash.values(filemap);
+    // check if the temporary directories/files have been changed
+    let changed = false;
+    for(let filepath in filemap) {
+      let info = filemap[filepath];
+      if (info.realobject && info.realobject.type === 'dir' &&
+          info.descriptor && info.descriptor.type === 'dir') continue;
+      if (!compareDir) {
+        if (info.realobject && info.realobject.type === 'dir' && !info.descriptor) continue;
+        if (info.descriptor && info.descriptor.type === 'dir' && !info.realobject) continue;
+      }
+      if (info.realobject && info.realobject.type === 'file' &&
+          info.descriptor && info.descriptor.type === 'file' &&
+          info.realobject.size === info.descriptor.size &&
+          info.realobject.checksum === info.descriptor.checksum) continue;
+      changed = true;
+      break;
+    }
+    return {
+      changed: changed,
+      details: lodash.values(filemap)
+    };
   }
 
   this.cleanup = function() {
@@ -213,10 +254,24 @@ function Builder(params = {}) {
   return this;
 }
 
-function isValid(entrypoint) {
-  let {dir, filename, template, mode} = entrypoint;
-  if (dir == null && filename == null) return false;
-  if (filename == null && template != null) return false;
+function isValid(entrypoint, throwIfError) {
+  function falseOrError(msg) {
+    if (throwIfError) throw new Error(msg);
+    return false;
+  }
+  let {dir, filename, template, variables, mode} = entrypoint;
+  if (dir == null && filename == null) {
+    return falseOrError('Both [dir] and [filename] parameters must not be null');
+  }
+  if (dir != null && !misc.isString(dir)) {
+    return falseOrError('[dir] must be a string');
+  }
+  if (filename != null && !misc.isString(filename)) {
+    return falseOrError('[filename] must be a string');
+  }
+  if (filename == null && (template != null || variables != null || mode != null)) {
+    return falseOrError('[dir] declaration does not need template, variables or mode');
+  }
   return true;
 }
 
