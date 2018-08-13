@@ -28,7 +28,7 @@ function Builder(params = {}) {
     if (isValid(entrypoint)) {
       let {dir, filename, template, variables, mode} = entrypoint;
       dir = dir || '.';
-      let fullpath = path.join(getContainer().name, subdir, dir);
+      let fullpath = path.join('.', dir, '/');
       if (filename) {
         if (misc.isString(template)) {
           template = misc.removeFirstLineBreak(deindent(template));
@@ -91,20 +91,21 @@ function Builder(params = {}) {
   });
 
   this.assign = function(args = {}) {
-    if (misc.isObject(args)) {
-      register(args);
-    } else
     if (misc.isArray(args)) {
       args.forEach(register);
+    } else
+    if (misc.isObject(args)) {
+      register(args);
     }
     return this;
   }
 
   this.generate = function() {
+    let self = this;
     for(let idx in descriptors) {
       let descriptor = descriptors[idx];
       if (!descriptor.deployed) {
-        shell.mkdir('-p', descriptor.dir);
+        shell.mkdir('-p', path.join(self.homedir, descriptor.dir));
         if (descriptor.filename) {
           let body = descriptor.template;
           let model = lodash.merge({}, variables, descriptor.variables);
@@ -113,7 +114,7 @@ function Builder(params = {}) {
           }
           descriptor.checksum = misc.generateChecksum(body);
           descriptor.size = body.length;
-          fs.writeFileSync(descriptor.filename, body, {
+          fs.writeFileSync(path.join(self.homedir, descriptor.filename), body, {
             mode: descriptor.mode
           });
         }
@@ -160,15 +161,15 @@ function Builder(params = {}) {
         if (!type) {
           type = 'unknown';
         }
-        filemap[fullpath] = { scope: 1, realobject: { type: type } };
+        filemap[file.name] = { scope: 1, realobject: { type: type } };
         if (type === 'file') {
-          filemap[fullpath].realobject.dir = path.dirname(fullpath);
-          filemap[fullpath].realobject.filename = fullpath;
-          filemap[fullpath].realobject.size = file.size;
-          filemap[fullpath].realobject.checksum = misc.getChecksumOfFile(fullpath);
+          filemap[file.name].realobject.dir = path.join(path.dirname(file.name), '/');
+          filemap[file.name].realobject.filename = file.name;
+          filemap[file.name].realobject.size = file.size;
+          filemap[file.name].realobject.checksum = misc.getChecksumOfFile(fullpath);
         }
         if (type === 'dir') {
-          filemap[fullpath].realobject.dir = fullpath;
+          filemap[file.name].realobject.dir = path.join(file.name, '/');
         }
       });
     }
