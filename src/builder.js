@@ -165,6 +165,7 @@ function Builder(params = {}) {
           filemap[fullpath].realobject.dir = path.dirname(fullpath);
           filemap[fullpath].realobject.filename = fullpath;
           filemap[fullpath].realobject.size = file.size;
+          filemap[fullpath].realobject.checksum = misc.getChecksumOfFile(fullpath);
         }
         if (type === 'dir') {
           filemap[fullpath].realobject.dir = fullpath;
@@ -180,7 +181,10 @@ function Builder(params = {}) {
         filemap[fullpath].scope = -1;
       }
       filemap[fullpath] = filemap[fullpath] || {};
-      filemap[fullpath].descriptor = lodash.omit(descriptor, ['template', 'variables']);
+      filemap[fullpath].descriptor = lodash.omit(descriptor, [
+        'template',
+        'variables'
+      ]);
     });
     return lodash.values(filemap);
   }

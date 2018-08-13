@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const fs = require('fs');
 
 function Misc() {
 
@@ -24,10 +25,11 @@ function Misc() {
   }
 
   this.generateChecksum = function (str) {
-    return crypto
-        .createHash('sha1')
-        .update(str, 'utf8')
-        .digest('hex');
+    return generateChecksum(str);
+  }
+
+  this.getChecksumOfFile = function(filename) {
+    return generateChecksum(fs.readFileSync(filename));
   }
 
   this.isCleanupSkipped = function () {
@@ -37,6 +39,13 @@ function Misc() {
   this.isUnsafeCleanup = function () {
     return process.env.TEMPORIFY_UNSAFE_CLEANUP === "true";
   }
+}
+
+function generateChecksum(str) {
+  return crypto
+      .createHash('sha1')
+      .update(str, 'utf8')
+      .digest('hex');
 }
 
 module.exports = new Misc();
