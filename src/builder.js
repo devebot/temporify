@@ -127,7 +127,7 @@ function Builder(params = {}) {
     opts = lodash.defaults({
       cwd: this.homedir,
       silent: true,
-    }, lodash.pick(opts, ['env', 'shell']));
+    }, lodash.pick(opts, ['cwd', 'env', 'shell']));
     let info = shell.exec(cmd, opts);
     // let {code, stdout, stderr} = info;
     return info;
@@ -182,7 +182,7 @@ function Builder(params = {}) {
       filemap[fullpath] = filemap[fullpath] || {};
       filemap[fullpath].descriptor = lodash.omit(descriptor, ['template', 'variables']);
     });
-    return filemap;
+    return lodash.values(filemap);
   }
 
   this.cleanup = function() {
