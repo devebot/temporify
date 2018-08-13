@@ -148,3 +148,8 @@ console.log(JSON.stringify(builder.ls(), null, 2));
 // clean-up
 builder.destroy();
 ```
+
+## License
+
+  [MIT](LICENSE)
+
