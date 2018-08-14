@@ -21,6 +21,9 @@ $ npm install --save-dev temporify
 
 * `args.subdir` - a relative path for sub directory that contains generated files.
 * `args.variables` - a map of key/value that provides default model for template compiling.
+* `args.skipCompareDir` - skip compare directory tree between real temporary with descriptors,
+  only comparing files if this option is true (default: `false`).
+* `args.throwIfError` - throw an error if `validate()` method has been failed (default: `true`).
 
 Example:
 

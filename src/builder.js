@@ -15,7 +15,7 @@ if (!misc.isCleanupSkipped()) {
 
 function Builder(params = {}) {
 
-  const deepCompareDir = params.deepCompareDir !== false;
+  const skipCompareDir = params.skipCompareDir === true;
   const throwIfError = params.throwIfError !== false;
   const subdir = lodash.isString(params.subdir) ? params.subdir : '';
   const variables = lodash.isObject(params.variables) ? lodash.cloneDeep(params.variables) : {};
@@ -69,7 +69,7 @@ function Builder(params = {}) {
           dir: fullpath
         };
       }
-      if (deepCompareDir) {
+      if (!skipCompareDir) {
         // extract ancestor directories
         let dirLevels = fullpath.split(path.sep);
         let parentDir = '.';
@@ -214,7 +214,7 @@ function Builder(params = {}) {
       let info = filemap[filepath];
       if (info.realobject && info.realobject.type === 'dir' &&
           info.descriptor && info.descriptor.type === 'dir') continue;
-      if (!deepCompareDir) {
+      if (skipCompareDir) {
         if (info.realobject && info.realobject.type === 'dir' && !info.descriptor) continue;
         if (info.descriptor && info.descriptor.type === 'dir' && !info.realobject) continue;
       }
