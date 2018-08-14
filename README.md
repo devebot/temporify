@@ -23,7 +23,7 @@ $ npm install --save-dev temporify
 * `args.variables` - a map of key/value that provides default model for template compiling.
 * `args.skipCompareDir` - skip compare directory tree between real temporary with descriptors,
   only comparing files if this option is true (default: `false`).
-* `args.throwIfError` - throw an error if `validate()` method has been failed (default: `true`).
+* `args.throwIfError` - throw an error if parameters of `assign()` are invalid (default: `true`).
 
 Example:
 
@@ -60,13 +60,14 @@ Method `generate()` is used to generate directories/files which have been declar
 
 #### `temporify.exec(command, opts)`
 
-Method `exec()` creates a new `child_process` and executes the provided `command`. `opts` can be:
+Method `exec()` creates a new [`child_process`](https://nodejs.org/api/child_process.html) and executes the provided `command`. The arguments can be:
 
+* `command` - a command string (for example: `npm install`).
 * `opts.cwd` - the current working directory (default is value of `temporify.homedir`).
-* `opts.env` - a list of environment variables in key/value format.
+* `opts.env` - the environment variables in key/value format.
 * `opts.shell` - path to the shell (default is `/bin/sh`).
 
-This method returns the `child_process` result object in format (code, stdout, stderr).
+This method returns the `child_process` result object in format (`code`, `stdout`, `stderr`).
 
 #### `temporify.stats()`
 
