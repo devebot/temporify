@@ -15,11 +15,11 @@ if (!misc.isCleanupSkipped()) {
 
 function Builder(params = {}) {
 
-  const compareDir = params.compareDir !== false;
+  const deepCompareDir = params.deepCompareDir !== false;
   const throwIfError = params.throwIfError !== false;
+  const subdir = lodash.isString(params.subdir) ? params.subdir : '';
+  const variables = lodash.isObject(params.variables) ? lodash.cloneDeep(params.variables) : {};
 
-  let subdir = misc.isString(params.subdir) ? params.subdir : '';
-  let variables = misc.isObject(params.variables) ? lodash.cloneDeep(params.variables) : {};
   let container = null;
   let descriptors = {};
 
@@ -33,11 +33,11 @@ function Builder(params = {}) {
       dir = dir || '.';
       let fullpath = path.join('.', dir, '/');
       if (filename) {
-        if (misc.isString(template)) {
+        if (lodash.isString(template)) {
           template = misc.removeFirstLineBreak(deindent(template));
         }
         let filepath = path.join(fullpath, filename);
-        if (misc.isObject(descriptors[filepath])) {
+        if (lodash.isObject(descriptors[filepath])) {
           let descriptor = descriptors[filepath];
           let changed = (mode != null && mode != descriptor.mode) ||
               (template != null && template != descriptor.template) ||
@@ -69,7 +69,7 @@ function Builder(params = {}) {
           dir: fullpath
         };
       }
-      if (compareDir) {
+      if (deepCompareDir) {
         // extract ancestor directories
         let dirLevels = fullpath.split(path.sep);
         let parentDir = '.';
@@ -109,10 +109,10 @@ function Builder(params = {}) {
   });
 
   this.assign = function(args = {}) {
-    if (misc.isArray(args)) {
+    if (lodash.isArray(args)) {
       args.forEach(register);
     } else
-    if (misc.isObject(args)) {
+    if (lodash.isObject(args)) {
       register(args);
     }
     return this;
@@ -214,7 +214,7 @@ function Builder(params = {}) {
       let info = filemap[filepath];
       if (info.realobject && info.realobject.type === 'dir' &&
           info.descriptor && info.descriptor.type === 'dir') continue;
-      if (!compareDir) {
+      if (!deepCompareDir) {
         if (info.realobject && info.realobject.type === 'dir' && !info.descriptor) continue;
         if (info.descriptor && info.descriptor.type === 'dir' && !info.realobject) continue;
       }
@@ -263,10 +263,10 @@ function isValid(entrypoint, throwIfError) {
   if (dir == null && filename == null) {
     return falseOrError('Both [dir] and [filename] parameters must not be null');
   }
-  if (dir != null && !misc.isString(dir)) {
+  if (dir != null && !lodash.isString(dir)) {
     return falseOrError('[dir] must be a string');
   }
-  if (filename != null && !misc.isString(filename)) {
+  if (filename != null && !lodash.isString(filename)) {
     return falseOrError('[filename] must be a string');
   }
   if (filename == null && (template != null || variables != null || mode != null)) {
@@ -276,7 +276,7 @@ function isValid(entrypoint, throwIfError) {
 }
 
 function isSafeDir(dir) {
-  return misc.isString(dir) && dir.match(/^\/tmp\/.*/g);
+  return lodash.isString(dir) && dir.match(/^\/tmp\/.*/g);
 }
 
 module.exports = Builder;
