@@ -155,5 +155,5 @@ builder.destroy();
 
 ## License
 
-  [MIT](LICENSE)
+  MIT
 
