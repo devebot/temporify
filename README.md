@@ -20,9 +20,9 @@ $ npm install --save-dev temporify
 `args` can be:
 
 * `args.subdir` - a relative path for sub directory that contains generated files.
-* `args.variables` - a map of key/value that provides default model for template compiling.
-* `args.skipCompareDir` - skip compare directory tree between real temporary with descriptors,
-  only comparing files if this option is true (default: `false`).
+* `args.variables` - a map of key or value that provides a default model for template compilations.
+* `args.skipCompareDir` - skip comparing directory trees between real temporary and descriptors,
+  only compare files if this option is true (default: `false`).
 * `args.throwIfError` - throw an error if parameters of `assign()` are invalid (default: `true`).
 
 Example:
@@ -44,13 +44,13 @@ var temporify = new Temporify({
 
 Method `assign` is used to declare a directory or a file that will be generated. 
 
-`args` can be a descriptor which is an object describes a directory/file or an array of descriptors. A `descriptor` composes of following fields:
+`args` can be a descriptor which is an object describing a directory/file or an array of descriptors. A `descriptor` composes of following fields:
 
 * `dir` - a path of the directory/file.
 * `filename` - a string that provides the name of file.
 * `mode` - a number that provides the mode of file.
-* `template` - an `ejs` template that used to compile to file content.
-* `variables` - a collection of template variables.
+* `template` - an `ejs` template that is used to compile into a file contents.
+* `variables` - a collection of variable templates.
 
 This method returns the `temporify` object itself.
 
@@ -65,17 +65,17 @@ Method `exec()` creates a new [`child_process`](https://nodejs.org/api/child_pro
 * `command` - a command string (for example: `npm install`).
 * `opts.cwd` - the current working directory (default is value of `temporify.homedir`).
 * `opts.env` - the environment variables in key/value format.
-* `opts.shell` - path to the shell (default is `/bin/sh`).
+* `opts.shell` - a path to the shell (default is `/bin/sh`).
 
 This method returns the `child_process` result object in format (`code`, `stdout`, `stderr`).
 
 #### `temporify.stats()`
 
-Method `stats()` collects temporary directory information and compares with declared descriptors. It returns the a JSON array that contains the statistics.
+Method `stats()` collects temporary directory information and compares with declared descriptors. It returns the a JSON array that contains statistics.
 
 #### `temporify.cleanup()`
 
-Method `cleanup()` deletes all of content (sub directories and files) of main temporary directory. It takes no arguments and returns the `temporify` object itself.
+Method `cleanup()` deletes all contents (sub directories and files) of the main temporary directory. It takes no arguments and returns the `temporify` object itself.
 
 #### `temporify.destroy()`
 
