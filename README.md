@@ -1,6 +1,6 @@
 # Temporify - generate temporary directories & files
 
-`Temporify` includes a temporary directory & files generator which is used to
+`Temporify` is a temporary directory & files generator which is used to
 build a temporary project in automation test.
 
 ## Installation
@@ -20,7 +20,7 @@ $ npm install --save-dev temporify
 `args` can be:
 
 * `args.subdir` - a relative path for a sub directory that contains generated files.
-* `args.variables` - a map of key or value that provides a default model for template compilations.
+* `args.variables` - a map of key/values that provides a default model for template compilations.
 * `args.skipCompareDir` - skip comparing directory trees between real temporary and descriptors,
   only compare files if this option is true (default: `false`).
 * `args.throwIfError` - throw an error if parameters of `assign()` are invalid (default: `true`).
