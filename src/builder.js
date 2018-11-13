@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const deindent = require('deindent');
 const ejs = require('ejs');
 const shell = require('shelljs');
 const tmp = require('tmp');
@@ -34,7 +33,7 @@ function Builder(params = {}) {
       let fullpath = path.join('.', dir, '/');
       if (filename) {
         if (lodash.isString(template)) {
-          template = misc.removeFirstLineBreak(deindent(template));
+          template = misc.deindent(template);
         }
         let filepath = path.join(fullpath, filename);
         if (lodash.isObject(descriptors[filepath])) {

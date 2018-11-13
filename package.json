@@ -1,6 +1,6 @@
 {
   "name": "temporify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generate temporary files and directories",
   "main": "index.js",
   "directories": {

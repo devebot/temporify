@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const deindent = require('deindent');
 const fs = require('fs');
 
 function Misc() {
@@ -15,6 +16,10 @@ function Misc() {
   
   this.isString = function (val) {
     return typeof val === 'string';
+  }
+
+  this.deindent = function(block) {
+    return this.removeFirstLineBreak(deindent(block));
   }
 
   this.removeFirstLineBreak = function (str) {
