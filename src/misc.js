@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const deindent = require('deindent');
+const dedent = require('dedent-js');
 const fs = require('fs');
 
 function Misc() {
@@ -19,7 +19,7 @@ function Misc() {
   }
 
   this.deindent = function(block) {
-    return this.removeFirstLineBreak(deindent(block));
+    return this.removeFirstLineBreak(dedent(block));
   }
 
   this.removeFirstLineBreak = function (str) {

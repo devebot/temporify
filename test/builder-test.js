@@ -74,7 +74,7 @@ describe('Builder', function() {
     ]);
 
     let text = shell.cat(path.join(builder.homedir, 'README.md'));
-    assert.equal(text.stdout, '# example-project\n');
+    assert.equal(text.stdout, '# example-project');
 
     let basedir = builder.basedir;
 

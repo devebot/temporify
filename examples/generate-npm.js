@@ -17,15 +17,20 @@ flow = flow.then(function() {
     filename: 'index.js',
     template: `
     'use strict';
+    
     var lab = require('<%- testHomeDir %>');
+    
     var Devebot = lab.getDevebot();
+    
     var app = Devebot.launchApplication({
       appRootPath: __dirname,
       <% if (privateProfile) { %>
       privateProfile: <%- privateProfile %>
       <% } %>
     });
+
     if (require.main === module) app.server.start();
+
     module.exports = app;
     `
   }, {
